@@ -193,12 +193,15 @@ public class CallKit extends CordovaPlugin {
             if(ringtone.isPlaying()) {
                 ringtone.stop();
             }
-            ringtone.play();
-
-            if(audioManager.getRingerMode() == AudioManager.RINGER_MODE_VIBRATE){
+            if (audioManager.getRingerMode() == AudioManager.RINGER_MODE_NORMAL) {
+                ringtone.play();
+                if (1 == Settings.System.getInt(ctx.getContentResolver(), "vibrate_when_ringing", 0) ||
+                    1 == Settings.System.getInt(ctx.getContentResolver(), Settings.System.VIBRATE_WHEN_RINGING, 0)) {
+                    vibrate = true;
+                }
+            } else if(audioManager.getRingerMode() == AudioManager.RINGER_MODE_VIBRATE) {
                 vibrate = true;
-            } else if (1 == Settings.System.getInt(ctx.getContentResolver(), "vibrate_when_ringing", 0)) //vibrate on
-                vibrate = true;
+            }
 
             vibrator = (Vibrator) ctx.getSystemService(Context.VIBRATOR_SERVICE);
             if (vibrate) {
