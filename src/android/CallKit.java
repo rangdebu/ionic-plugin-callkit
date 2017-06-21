@@ -18,7 +18,6 @@ import android.media.AudioManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.PowerManager;
 import android.os.Build;
 
 import android.os.Vibrator;
@@ -36,8 +35,6 @@ import java.util.UUID;
 public class CallKit extends CordovaPlugin {
     public static final String TAG = "CallKit";
 
-    public static PowerManager powerManager;
-    public static PowerManager.WakeLock wakeLock;
     private static Ringtone ringtone;
     private static Vibrator vibrator;
     private static String callName;
@@ -45,9 +42,6 @@ public class CallKit extends CordovaPlugin {
     @Override
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         super.initialize(cordova, webView);
-
-        powerManager = (PowerManager) cordova.getActivity().getSystemService(Context.POWER_SERVICE);
-        wakeLock = powerManager.newWakeLock((PowerManager.PARTIAL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE), TAG);
 
         Log.v(TAG, "Init CallKit");
     }
@@ -160,12 +154,11 @@ public class CallKit extends CordovaPlugin {
             @Override
             public void run() {
                 try {
-                    String packageName = cordova.getActivity().getApplicationContext().getPackageName();
-
-                    Intent intent = new Intent("android.intent.action.MAIN");
-                    intent.setComponent(new ComponentName(packageName, packageName + ".MainActivity"));
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                    cordova.getActivity().getApplicationContext().startActivity(intent);
+                    Context context = cordova.getActivity().getApplicationContext();
+                    PackageManager pm = context.getPackageManager();
+                    String packageName = context.getPackageName();
+                    Intent intent = pm.getLaunchIntentForPackage(packageName);
+                    context.startActivity(intent);
                 } catch (Exception e)  {
                     Log.v(TAG, "CallKit error: " + e.getMessage());
                 }
@@ -178,10 +171,6 @@ public class CallKit extends CordovaPlugin {
             }
         });
 
-        if(wakeLock.isHeld()) {
-            wakeLock.release();
-        }
-        wakeLock.acquire();
         try {
             boolean vibrate = false;
             Uri ringtoneUri;
@@ -300,10 +289,6 @@ public class CallKit extends CordovaPlugin {
                     WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             }
         });
-
-        if(wakeLock.isHeld()) {
-            wakeLock.release();
-        }
 
         finishRing(args,callbackContext);
 
