@@ -235,37 +235,41 @@ public class CallKit extends CordovaPlugin {
     }
 
     private void notifyUser(String uuid) {
-        String appName;
         ApplicationInfo app = null;
 
         Context context = cordova.getActivity().getApplicationContext();
-        PackageManager packageManager = cordova.getActivity().getPackageManager();
+        PackageManager packageManager = context.getPackageManager();
+        String packageName = context.getPackageName();
 
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
         try {
-            app = packageManager.getApplicationInfo(cordova.getActivity().getPackageName(), 0);
-            appName = (String)packageManager.getApplicationLabel(app);
+            app = packageManager.getApplicationInfo(packageName, 0);
         } catch (PackageManager.NameNotFoundException e) {
-            appName = "Incoming";
             e.printStackTrace();
         }
 
+        Intent launchIntent = packageManager.getLaunchIntentForPackage(packageName);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context)
-                .setContentTitle( appName + " call missed" )
-                .setContentText( callName )
+                .setContentTitle( callName )
+                .setContentText( "부재중 전화" ) // TODO: i18n
+                .setContentIntent( pendingIntent )
+                .setAutoCancel( true )
                 .setSound( defaultSoundUri );
 
-        int resID = context.getResources().getIdentifier("callkit_missed_call", "drawable", cordova.getActivity().getPackageName());
+        int resID = context.getResources().getIdentifier("notification_icon", "drawable", cordova.getActivity().getPackageName());
         if (resID != 0) {
             notificationBuilder.setSmallIcon(resID);
         } else {
             notificationBuilder.setSmallIcon(app.icon);
         }
-        notificationBuilder.setLargeIcon( BitmapFactory.decodeResource( context.getResources(), app.icon ) );
 
-        PendingIntent contentIntent = PendingIntent.getBroadcast(context, 0, new Intent(context, CallKitReceiver.class), PendingIntent.FLAG_UPDATE_CURRENT);
-        notificationBuilder.setContentIntent(contentIntent);
+        int accentID = context.getResources().getIdentifier("accent", "color", context.getPackageName());
+        if (accentID != 0 && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            notificationBuilder.setColor(context.getResources().getColor(accentID, null));
+        }
 
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(uuid.hashCode(), notificationBuilder.build());
