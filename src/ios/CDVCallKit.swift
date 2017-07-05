@@ -158,9 +158,17 @@
     func endCall(_ command:CDVInvokedUrlCommand) {
         self.commandDelegate.run(inBackground: {
             let uuid = UUID(uuidString: command.arguments[0] as? String ?? "")
+            let notify = command.arguments[1] as? Bool ?? false
 
             if (uuid != nil) {
                 let call = self.callManager?.callWithUUID(uuid!)
+
+                if (notify) {
+                    let localNotification = UILocalNotification()
+                    localNotification.alertTitle = call!.handle
+                    localNotification.alertBody = "부재중 전화" // TODO: i18n
+                    UIApplication.shared.scheduleLocalNotification(localNotification)
+                }
 
                 if (call != nil) {
                     self.callManager?.end(call!)
