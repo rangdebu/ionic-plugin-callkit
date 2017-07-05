@@ -96,7 +96,9 @@
             if (UIApplication.shared.applicationState == UIApplicationState.background) {
                 let localNotification = UILocalNotification()
                 localNotification.fireDate = NSDate(timeIntervalSinceNow: 1) as Date
-                localNotification.alertBody = name
+                localNotification.alertTitle = name
+                localNotification.alertBody = "따르르릉! 전화가 오고 있습니다!" // TODO: i18n
+                localNotification.soundName = "default"
                 UIApplication.shared.scheduleLocalNotification(localNotification)
             }
         }
