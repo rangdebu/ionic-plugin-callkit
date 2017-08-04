@@ -241,9 +241,12 @@ public class CallKit extends CordovaPlugin {
         Intent launchIntent = packageManager.getLaunchIntentForPackage(packageName);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
+        int missedId = context.getResources().getIdentifier("MISSED_CALL", "string", packageName);
+        String contentText = context.getResources().getString(missedId);
+
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context)
                 .setContentTitle( callName )
-                .setContentText( "부재중 전화" ) // TODO: i18n
+                .setContentText( contentText )
                 .setContentIntent( pendingIntent )
                 .setAutoCancel( true )
                 .setSound( defaultSoundUri );

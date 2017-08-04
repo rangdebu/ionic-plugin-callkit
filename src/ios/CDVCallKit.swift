@@ -94,10 +94,11 @@
         } else {
             // iOS 9: if the application is in background, show a notification
             if (UIApplication.shared.applicationState == UIApplicationState.background) {
+                let bodyString = String(format: NSLocalizedString("INCOMING_CALL_MSG", comment: ""), name)
+
                 let localNotification = UILocalNotification()
                 localNotification.fireDate = NSDate(timeIntervalSinceNow: 1) as Date
-                localNotification.alertTitle = name
-                localNotification.alertBody = "따르르릉! 전화가 오고 있습니다!" // TODO: i18n
+                localNotification.alertBody = bodyString
                 localNotification.soundName = "default"
                 UIApplication.shared.scheduleLocalNotification(localNotification)
             }
@@ -168,7 +169,7 @@
                 if (notify) {
                     let localNotification = UILocalNotification()
                     localNotification.alertTitle = call!.handle
-                    localNotification.alertBody = "부재중 전화" // TODO: i18n
+                    localNotification.alertBody = NSLocalizedString("MISSED_CALL", comment: "")
                     UIApplication.shared.scheduleLocalNotification(localNotification)
                 }
 
